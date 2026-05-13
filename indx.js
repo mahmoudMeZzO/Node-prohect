@@ -11,7 +11,7 @@ const RouterLog =require("./route/logRoute")
 
 const app = express()
 const Url = process.env.URL
-const Port = process.env.Port
+const Port = process.env.Port || 5000
 
 mongoose.connect(Url).then(()=>{
     console.log("mongodb connect success")
