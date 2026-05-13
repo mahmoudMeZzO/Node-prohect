@@ -25,6 +25,6 @@ app.use("/api/userA" , RouterLog)
 
 
 
-app.listen(Port , ()=>{
+app.listen(Port ,"0.0.0.0", ()=>{
     console.log("listen is port 5000")
 })
