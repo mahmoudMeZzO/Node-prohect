@@ -81,9 +81,6 @@ const login = async ( req, res )=>{
         }
     }
       
- 
- 
- 
 
 const delet = async (req,res)=>{
     
