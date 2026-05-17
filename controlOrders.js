@@ -7,10 +7,12 @@ const createOrder = async (req, res) => {
     const { items } = req.body;
     if (!items || items.length === 0) {
       return res.status(400).json({ message: 'العربة فاضية' });
+      console.log(req.user);
+
     }
     const order = new Order({
-      userId: req.user.id,
-      userEmail: req.user.emile,
+      userId: req.user.id || req.user._id,
+      userEmail: req.user.emile || req.user.emil,
       items,
       status: 'pending',
     });
