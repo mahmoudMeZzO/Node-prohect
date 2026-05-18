@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const OrderSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'UserA',
+    ref: 'Users',
     required: true,
   },
   userEmail: {
@@ -18,7 +18,7 @@ const OrderSchema = new mongoose.Schema({
       quantity: { type: Number, default: 1 },
     }
   ],
-  phone:   { type: String, default: '' },
+  phone: { type: String, default: '' },
   address: { type: String, default: '' },
   status: {
     type: String,
