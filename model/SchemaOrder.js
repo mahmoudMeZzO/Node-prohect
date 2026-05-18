@@ -3,12 +3,12 @@ const mongoose = require('mongoose');
 const OrderSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'users',
-    required: false,
+    ref: 'UserA',
+    required: true,
   },
   userEmail: {
     type: String,
-    required: false,
+    required: true,
   },
   items: [
     {
@@ -18,6 +18,8 @@ const OrderSchema = new mongoose.Schema({
       quantity: { type: Number, default: 1 },
     }
   ],
+  phone: { type: String, default: '' },
+  address: { type: String, default: '' },
   status: {
     type: String,
     enum: ['pending', 'preparing', 'delivering', 'delivered'],

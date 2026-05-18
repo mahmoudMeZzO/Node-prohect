@@ -4,16 +4,16 @@ const Verifytoken = require('./Verifytoken');
 // إنشاء أوردر جديد (للعميل)
 const createOrder = async (req, res) => {
   try {
-    const { items } = req.body;
+    const { items, phone, address } = req.body;
     if (!items || items.length === 0) {
       return res.status(400).json({ message: 'العربة فاضية' });
-      console.log(req.user);
-
     }
     const order = new Order({
       userId: req.user.id || req.user._id,
-      userEmail: req.user.emile || req.user.emil,
+      userEmail: req.user.emile || req.user.email || '',
       items,
+      phone: phone || '',
+      address: address || '',
       status: 'pending',
     });
     await order.save();
