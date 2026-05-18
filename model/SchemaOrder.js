@@ -4,11 +4,11 @@ const OrderSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Users',
-    required: true,
+    required: false,
   },
   userEmail: {
     type: String,
-    required: true,
+    required: false,
   },
   items: [
     {
