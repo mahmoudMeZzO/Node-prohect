@@ -9,7 +9,7 @@ const jwtTooken = require("./jwtTooken")
 const getAll = async ( req, res )=>{
   try{
     const query =req.query
-    const limet = query.limet || 20 
+    const limet = query.limet || 100 
     const page = query.page || 1
     const skip = (page-1)*limet
 
