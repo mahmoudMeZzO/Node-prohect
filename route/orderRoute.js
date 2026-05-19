@@ -1,14 +1,18 @@
 const express = require('express');
 const Verifytoken = require('../Verifytoken');
-const { createOrder, getMyOrders, getAllOrders, updateOrderStatus, getOneOrder } = require('../controlOrders');
+const {
+    createOrder, getMyOrders, getOneOrder, getAllOrders,
+    updateOrderStatus, addItemToOrder, removeItemFromOrder
+} = require('../controlOrders');
 
 const RouterOrder = express.Router();
 
-// العميل
-RouterOrder.route('/').post(Verifytoken, createOrder);
-RouterOrder.route('/my').get(Verifytoken, getMyOrders);
-RouterOrder.route('/all').get(Verifytoken, getAllOrders);
-RouterOrder.route('/:id').get(Verifytoken, getOneOrder);
-RouterOrder.route('/:id/status').patch(Verifytoken, updateOrderStatus);
+RouterOrder.post('/', Verifytoken, createOrder);
+RouterOrder.get('/my', Verifytoken, getMyOrders);
+RouterOrder.get('/all', Verifytoken, getAllOrders);
+RouterOrder.get('/:id', Verifytoken, getOneOrder);
+RouterOrder.patch('/:id/status', Verifytoken, updateOrderStatus);
+RouterOrder.post('/:id/add-item', Verifytoken, addItemToOrder);
+RouterOrder.post('/:id/remove-item', Verifytoken, removeItemFromOrder);
 
 module.exports = RouterOrder;

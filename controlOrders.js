@@ -7,18 +7,18 @@ const createOrder = async (req, res) => {
 
     if (!items || items.length === 0)
       return res.status(400).json({ message: 'العربة فاضية' });
-    if (!firstName || !lastName || !phone || !address)
-      return res.status(400).json({ message: 'من فضلك ادخل الاسم والتليفون والعنوان' });
+    if (!phone || !address)
+      return res.status(400).json({ message: 'من فضلك ادخل التليفون والعنوان' });
 
-    // نجيب الـ userId والـ email من الـ token
-    const userId    = String(req.user?.id    || req.user?._id  || '');
-    const userEmail = String(req.user?.emile || req.user?.email || '');
+    // الـ emile دايماً موجود في الـ token
+    const userEmail = req.user?.emile || req.user?.email || '';
+    const userId = String(req.user?.id || req.user?._id || '');
 
     const order = new Order({
       userId,
       userEmail,
-      firstName,
-      lastName,
+      firstName: firstName || '',
+      lastName: lastName || '',
       phone,
       address,
       notes: notes || '',
@@ -33,17 +33,19 @@ const createOrder = async (req, res) => {
   }
 };
 
-// جلب أوردرات اليوزر الحالي بس
+// جلب أوردرات اليوزر بالـ email (الأضمن)
 const getMyOrders = async (req, res) => {
   try {
-    const userId    = String(req.user?.id    || req.user?._id  || '');
-    const userEmail = String(req.user?.emile || req.user?.email || '');
+    const userEmail = req.user?.emile || req.user?.email || '';
+    const userId = String(req.user?.id || req.user?._id || '');
 
-    // نجيب بالـ userId أو بالـ email — أيهما يجيب نتايج
-    let orders = await Order.find({ userId }).sort({ createdAt: -1 });
-    if (orders.length === 0 && userEmail) {
-      orders = await Order.find({ userEmail }).sort({ createdAt: -1 });
-    }
+    // نجيب بالـ email أو بالـ userId
+    const orders = await Order.find({
+      $or: [
+        { userEmail: userEmail },
+        { userId: userId },
+      ]
+    }).sort({ createdAt: -1 });
 
     return res.status(200).json({ orders });
   } catch (e) {
@@ -51,18 +53,26 @@ const getMyOrders = async (req, res) => {
   }
 };
 
-// جلب أوردر واحد
+// جلب أوردر واحد — بس لو بتاع اليوزر
 const getOneOrder = async (req, res) => {
   try {
+    const userEmail = req.user?.emile || req.user?.email || '';
+    const userId = String(req.user?.id || req.user?._id || '');
     const order = await Order.findById(req.params.id);
+
     if (!order) return res.status(404).json({ message: 'الأوردر مش موجود' });
+
+    // تأكيد إن الأوردر بتاع اليوزر ده
+    const isOwner = order.userEmail === userEmail || order.userId === userId;
+    if (!isOwner) return res.status(403).json({ message: 'مش مسموح' });
+
     return res.status(200).json({ order });
   } catch (e) {
     return res.status(500).json({ message: e.message });
   }
 };
 
-// جلب كل الأوردرات (للموظفين)
+// جلب كل الأوردرات (للموظفين فقط)
 const getAllOrders = async (req, res) => {
   try {
     const orders = await Order.find().sort({ createdAt: -1 });
@@ -90,4 +100,49 @@ const updateOrderStatus = async (req, res) => {
   }
 };
 
-module.exports = { createOrder, getMyOrders, getOneOrder, getAllOrders, updateOrderStatus };
+// إضافة منتج للأوردر (طالما pending أو preparing)
+const addItemToOrder = async (req, res) => {
+  try {
+    const { item } = req.body;
+    const order = await Order.findById(req.params.id);
+    if (!order) return res.status(404).json({ message: 'الأوردر مش موجود' });
+    if (!['pending', 'preparing'].includes(order.status))
+      return res.status(400).json({ message: 'مش ممكن تعدل الأوردر في المرحلة دي' });
+
+    const exists = order.items.find(i => i.productId === item.productId);
+    if (exists) {
+      exists.quantity += 1;
+    } else {
+      order.items.push({ ...item, quantity: item.quantity || 1 });
+    }
+    await order.save();
+    return res.status(200).json({ message: 'تمت الإضافة', order });
+  } catch (e) {
+    return res.status(500).json({ message: e.message });
+  }
+};
+
+// حذف منتج من الأوردر
+const removeItemFromOrder = async (req, res) => {
+  try {
+    const { productId } = req.body;
+    const order = await Order.findById(req.params.id);
+    if (!order) return res.status(404).json({ message: 'الأوردر مش موجود' });
+    if (!['pending', 'preparing'].includes(order.status))
+      return res.status(400).json({ message: 'مش ممكن تعدل الأوردر في المرحلة دي' });
+
+    order.items = order.items.filter(i => i.productId !== productId);
+    if (order.items.length === 0)
+      return res.status(400).json({ message: 'الأوردر لازم يكون فيه منتج واحد على الأقل' });
+
+    await order.save();
+    return res.status(200).json({ message: 'تم الحذف', order });
+  } catch (e) {
+    return res.status(500).json({ message: e.message });
+  }
+};
+
+module.exports = {
+  createOrder, getMyOrders, getOneOrder, getAllOrders,
+  updateOrderStatus, addItemToOrder, removeItemFromOrder
+};
