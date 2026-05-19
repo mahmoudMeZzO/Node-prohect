@@ -3,6 +3,10 @@ const Order = require('./model/SchemaOrder');
 // إنشاء أوردر جديد
 const createOrder = async (req, res) => {
   try {
+    console.log("======c=====");
+    console.log("req.user",req.user);
+    console.log("req hedars", req.headers.authrization);
+    
     const { items, firstName, lastName, phone, address, notes } = req.body;
 
     if (!items || items.length === 0)
