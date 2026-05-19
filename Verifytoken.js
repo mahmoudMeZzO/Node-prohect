@@ -1,28 +1,18 @@
-const jwt = require("jsonwebtoken")
-const control2 = require('./controlusers')
-const UserA = require('./model/SchemaUsers')
-require("dotenv").config()
+const jwt = require("jsonwebtoken");
+require("dotenv").config();
 
+module.exports = async (req, res, next) => {
+  try {
+    const getauth = req.headers["Authorization"] || req.headers["authorization"];
+    const token2  = getauth.split(" ")[1];
+    const verify  = jwt.verify(token2, process.env.SecretKey);
 
-const Verifytoken = async (req, res, next) => {
+    console.log("Verifytoken - decoded:", verify); // مهم نشوف إيه جوا الـ token
 
-
-
-    try {
-        const getauth = await req.headers["Authorization"] || req.headers["authorization"]
-        const token2 = getauth.split(" ")[1]
-
-        const verify = jwt.verify(token2, process.env.SecretKey)
-        // console.log("auth =>" , verify);
-        req.user = verify
-        next()
-    } catch (e) {
-        res.json("token not valid")
-        console.log(e);
-
-    }
-
-
-
-}
-module.exports = Verifytoken
+    req.user = verify;
+    next();
+  } catch (e) {
+    res.json("token not valid");
+    console.log(e);
+  }
+};
